@@ -1,0 +1,11 @@
+{
+	"model":"models.classification/resnet50",
+	"combined_model":true,
+	"labels":"models.classification/resnet50/label_list.txt",
+	"input_width":224,
+	"input_height":224,
+	"image":"models.classification/resnet50/1.jpg",
+	"mean":[123.675, 116.28, 103.53],
+	"scale":0.01743,
+	"format":"RGB"
+}
