@@ -7,13 +7,19 @@ import cv2
 import numpy as np
 import paddlemobile as pm
 
+from utils.video import VideoThread, SerialThread
+
 
 class Baidu:
-    def __init__(self, configs):
+    def __init__(self, video_path, configs, label_map):
+
         self.predictor = None
         self.labels = []
         self.classes = []
+        self.video_path = video_path
+        self.configs = configs
         self.model_dir = configs['model']
+        self.label_map = label_map
         self.pm_config = pm.PaddleMobileConfig()
         self.pm_config.precision = pm.PaddleMobileConfig.Precision.FP32
         self.pm_config.device = pm.PaddleMobileConfig.Device.kFPGA
@@ -29,6 +35,16 @@ class Baidu:
         print('\tThreadNum: ' + str(self.pm_config.thread_num))
 
         self.predictor = pm.CreatePaddlePredictor(self.pm_config)
+        self.tensor = self.init_tensor((1, 3, configs['input_width'], configs['input_height']))
+        # init video_thread
+        self.video_thread = VideoThread(self.video_path, self.configs['input_width'], self.configs['input_height'], 1,
+                                        'video_thread')
+
+    def init_tensor(self, data_shape):
+        tensor = pm.PaddleTensor()
+        tensor.dtype = pm.PaddleDType.FLOAT32
+        tensor.shape = data_shape
+        return tensor
 
     def read_labels(self, configs):
         if not 'labels' in configs:
@@ -92,68 +108,57 @@ class Baidu:
         font = cv2.FONT_HERSHEY_SIMPLEX
         print('boxes with scores above the threshold (%f): ' % threshold)
         i = 1
+        print('类别\t置信度\t中点坐标\t左上坐标\t右下坐标\t')
         for box in output:
             if box[1] > threshold:
-                print('\t', i, '\t', int(box[0]), '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
+                print(self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
                 x_min = int(box[2] * width)
                 y_min = int(box[3] * height)
                 x_max = int(box[4] * width)
                 y_max = int(box[5] * height)
                 cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
-                cv2.putText(image, str(int(box[0])) + ":" + "{:.2f}".format(box[1]), (x_min, y_min - 10), font, 1, (0, 255, 0), 6)
+                cv2.putText(image, self.label_map[str(int(box[0]))] + ":" + "{:.2f}".format(box[1]), (x_min, y_min - 10), font, 1,
+                            (0, 255, 0), 6)
                 i += 1
         cv2.imwrite("/home/root/workspace/Paddle_EdgeBoard/output/result.jpg", image)
 
-    def show_detection_result(self, image, output, threshold):
+    def show_result_in_console(self, image, output, threshold):
+        height, width, _ = image.shape
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        print('[INFO] boxes with scores above the threshold (%f): ' % threshold)
+        print('类别\t置信度\t中点坐标\t左上坐标\t右下坐标\t')
+        for box in output:
+            if box[1] > threshold:
+                print(self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
+
+    def show_result_in_video(self, image, output, threshold):
         height, width, _ = image.shape
         font = cv2.FONT_HERSHEY_SIMPLEX
         print('boxes with scores above the threshold (%f): ' % threshold)
         i = 1
+        print('类别\t置信度\t中点坐标\t左上坐标\t右下坐标\t')
         for box in output:
             if box[1] > threshold:
-                print('\t', i, '\t', int(box[0]), '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
                 x_min = int(box[2] * width)
                 y_min = int(box[3] * height)
                 x_max = int(box[4] * width)
                 y_max = int(box[5] * height)
                 cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
-                cv2.putText(image, str(int(box[0])) + ":" + "{:.2f}".format(box[1]), (x_min, y_min - 10), font, 1,
+                cv2.putText(image, self.label_map[str(int(box[0]))] + ":" + "{:.2f}".format(box[1]), (x_min, y_min - 10), font, 1,
                             (0, 255, 0), 6)
-                i += 1
-                print("")
-
-
-    def classify(self, output):
-
-        data = output.flatten()
-        max_index = 0
-        score = 0.0
-        for i in range(len(data)):
-            if data[i] > score and not data[i] == float('inf'):
-                max_index = i
-                score = data[i]
-        self.classes.append(self.labels[max_index])
-        print('label: ', self.labels[max_index])
-        print('index: ', max_index)
-        print('score: ', score)
 
     def detect(self, output, configs):
         image = self.read_image(configs)
         self.draw_results(image, output, configs['threshold'])
 
-    def predict_image(self, configs, detection):
-        width = configs['input_width']
-        height = configs['input_height']
+    def predict_image(self, configs):
 
         image = self.read_image(configs)
         input = self.preprocess_image(image, configs)
 
-        tensor = pm.PaddleTensor()
-        tensor.dtype = pm.PaddleDType.FLOAT32
-        tensor.shape = (1, 3, width, height)
-        tensor.data = pm.PaddleBuf(input)
+        self.tensor.data = pm.PaddleBuf(input)
 
-        paddle_data_feeds = [tensor]
+        paddle_data_feeds = [self.tensor]
 
         print('prediction is running ...')
         outputs = self.predictor.Run(paddle_data_feeds)
@@ -166,13 +171,35 @@ class Baidu:
         print('\tShape: ' + str(output.shape))
         print('\tDType: ' + str(output.dtype))
 
-        if detection:
-            self.detect(output, configs)
-        else:
-            self.classify(output)
+        self.detect(output, configs)
 
-    def predict_video(self):
-        pass
+    def predict_video(self, configs):
+
+        self.video_thread.start()
+        init_flag = True
+        while True:
+            frame = self.video_thread.get_image()
+            if frame is None:
+                print('[INFO] fail to read frame ...')
+                break
+            if init_flag:
+                print('[INFO] prediction is running ...')
+                init_flag = False
+                continue
+
+            image = self.preprocess_image(frame, configs)
+            self.tensor.data = pm.PaddleBuf(image)
+            paddle_data_feeds = [self.tensor]
+
+            outputs = self.predictor.Run(paddle_data_feeds)
+
+            assert len(outputs) == 1, 'error numbers of tensor returned from Predictor.Run function !!!'
+
+            output = np.array(outputs[0], copy=False)
+            self.show_result_in_console(frame, output, configs['threshold'])
 
     def predict_camera(self):
+        camera_serial = SerialThread('serial_thread')
+        camera_serial.start()
+        self.video_thread.start()
         pass
