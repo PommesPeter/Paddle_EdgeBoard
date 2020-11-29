@@ -49,7 +49,7 @@ def load_label_list():
         return 0
     with open('./config/label_list.txt', 'r') as f:
         lines = f.readlines()
-    id = 0
+    id = 1
     for line in lines:
         line = line.split('\n')[0].split('\r')[0]
         _label_map[str(id)] = line

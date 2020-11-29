@@ -109,7 +109,7 @@ class Baidu:
 
         height, width, _ = image.shape
         font = cv2.FONT_HERSHEY_SIMPLEX
-        print('boxes with scores above the threshold (%f): ' % threshold)
+        print('boxes with scores above the threshold (%.3f): ' % threshold)
         i = 1
         print('类别\t置信度\t中点坐标\t左上坐标\t右下坐标\t')
         for box in output:
@@ -119,20 +119,19 @@ class Baidu:
                 y_min = int(box[3] * height)
                 x_max = int(box[4] * width)
                 y_max = int(box[5] * height)
+                print('+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
                 cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
-                cv2.putText(image, self.label_map[str(int(box[0]))] + ":" + "{:.2f}".format(box[1]), (x_min, y_min - 10), font, 1,
-                            (0, 255, 0), 6)
+                cv2.putText(image, self.label_map[str(int(box[0]))] + ":" + "{:.2f}".format(box[1]), (x_min, y_min - 10), font, 1, (0, 255, 0), 6)
                 i += 1
-        cv2.imwrite("/home/root/workspace/Paddle_EdgeBoard/output/result.jpg", image)
+        cv2.imwrite("/home/root/workspace/Paddle_EdgeBoard/output/result"+ str(i) + ".jpg", image)
 
     def show_result_in_console(self, image, output, threshold):
         height, width, _ = image.shape
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        print('[INFO] boxes with scores above the threshold (%f): ' % threshold)
+        print('[INFO] boxes with scores above the threshold (%.3f): ' % threshold)
         print('类别\t置信度\t中点坐标\t左上坐标\t右下坐标\t')
         for box in output:
             if box[1] > threshold:
-                print(self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
+                print('+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
 
     def show_result_in_video(self, image, output, threshold):
         height, width, _ = image.shape
@@ -146,13 +145,15 @@ class Baidu:
                 y_min = int(box[3] * height)
                 x_max = int(box[4] * width)
                 y_max = int(box[5] * height)
+                print('+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
                 cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
                 cv2.putText(image, self.label_map[str(int(box[0]))] + ":" + "{:.2f}".format(box[1]), (x_min, y_min - 10), font, 1,
                             (0, 255, 0), 6)
 
-    def detect(self, output, configs):
-        image = self.read_image(configs)
-        self.draw_results(image, output, configs['threshold'])
+    # def detect(self, output, configs):
+    #     image = self.read_image(configs)
+    #     # self.draw_results(image, output, configs['threshold'])
+    #     self.show_result_in_console(image, output, configs['threshold'])
 
     def predict_image(self, configs):
 
@@ -173,8 +174,9 @@ class Baidu:
         print('\t nDim: ' + str(output.ndim))
         print('\tShape: ' + str(output.shape))
         print('\tDType: ' + str(output.dtype))
-
-        self.detect(output, configs)
+        image = self.read_image(configs)
+        self.draw_results(image, output, configs['threshold'])
+        # self.show_result_in_console(image, output, configs['threshold'])
 
     def predict_video(self, configs):
 
