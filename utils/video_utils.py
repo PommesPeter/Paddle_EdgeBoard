@@ -8,9 +8,9 @@ import numpy as np
 import v4l2capture
 import warnings
 
-from utils.utils import print_results, draw_results
+from utils import print_results, draw_results
 # from PIL import Image
-from utils.video_serial import SerialThread
+from video_serial import SerialThread
 
 __all__ = ['video_process', 'VideoThread']
 

@@ -43,16 +43,15 @@ def print_results(boxes, class_names, init_flag):
 
 
 def load_label_list():
-    id = 0
-    config_list = os.listdir('../config')
+    config_list = os.listdir('./config')
     _label_map = dict()
     if 'label_list.txt' not in config_list:
         return 0
-    with open('../config/label_list.txt', 'r') as f:
+    with open('./config/label_list.txt', 'r') as f:
         lines = f.readlines()
-
+    id = 0
     for line in lines:
-        line = line.split('\n')[0]
+        line = line.split('\n')[0].split('\r')[0]
         _label_map[str(id)] = line
         id += 1
     return _label_map

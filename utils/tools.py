@@ -7,16 +7,18 @@ import cv2
 import numpy as np
 import paddlemobile as pm
 
-from utils.video import VideoThread, SerialThread
+# from utils.video_utils import VideoThread, SerialThread
+from video_utils import VideoThread, SerialThread
 
 
 class Baidu:
-    def __init__(self, video_path, configs, label_map):
+    def __init__(self, configs, label_map, name):
 
+        self.name = name
         self.predictor = None
         self.labels = []
         self.classes = []
-        self.video_path = video_path
+        self.video_path = configs['video']
         self.configs = configs
         self.model_dir = configs['model']
         self.label_map = label_map
@@ -37,7 +39,8 @@ class Baidu:
         self.predictor = pm.CreatePaddlePredictor(self.pm_config)
         self.tensor = self.init_tensor((1, 3, configs['input_width'], configs['input_height']))
         # init video_thread
-        self.video_thread = VideoThread(self.video_path, self.configs['input_width'], self.configs['input_height'], 1,
+        if self.name == 'video':
+            self.video_thread = VideoThread(self.video_path, self.configs['input_width'], self.configs['input_height'], 1,
                                         'video_thread')
 
     def init_tensor(self, data_shape):

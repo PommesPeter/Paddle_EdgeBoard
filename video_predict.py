@@ -22,7 +22,7 @@ def print_args(args):
 
 
 if __name__ == '__main__':
-    video_path = './data/test.mp4'
+    # video_path = './data/test.mp4'
     label_map = dict()
     args = parse_args()
     print_args(args)
@@ -38,7 +38,7 @@ if __name__ == '__main__':
         sys.exit(0)
     else:
         print(label_map)
-    baidu = Baidu(video_path, configs, label_map)
+    baidu = Baidu(configs, label_map)
     baidu.read_labels(configs)
     baidu.predict_video(configs)
     sys.exit(0)
