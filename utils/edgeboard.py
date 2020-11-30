@@ -1,10 +1,8 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
-
 import os
 import cv2
 import numpy as np
-
 import paddlemobile as pm
 
 predictor = None
@@ -20,6 +18,8 @@ def init(configs):
     pm_config.device = pm.PaddleMobileConfig.Device.kFPGA
     pm_config.prog_file = os.path.join(model_dir, "model")
     pm_config.param_file = os.path.join(model_dir, "params")
+    pm_config.prog_file = model_dir + "/model"
+    pm_config.param_file = model_dir + '/params'
     pm_config.thread_num = 4
 
     print('')
