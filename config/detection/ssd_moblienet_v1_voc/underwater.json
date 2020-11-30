@@ -1,0 +1,17 @@
+{
+  "model": "model/detection/ssd_moblienet_v1_voc",
+  "combined_model": true,
+  "input_width": 640,
+  "input_height": 640,
+  "image": "data/1.jpg",
+  "video": "data/video.mp4",
+  "camera": "/dev/video2",
+  "mean": [
+    104,
+    117,
+    124
+  ],
+  "scale": 1,
+  "format": "BGR",
+  "threshold": 0.2
+}

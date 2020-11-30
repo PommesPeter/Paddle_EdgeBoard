@@ -1,0 +1,11 @@
+{
+	"model":"models.detection/mobilenet-ssd-640",
+	"combined_model":true,
+	"input_width":640,
+	"input_height":640,
+	"image":"models.detection/mobilenet-ssd-640/1.jpg",
+	"mean":[104,117,124],
+	"scale":1,
+	"format":"BGR",
+	"threshold":0.2
+}

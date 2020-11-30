@@ -1,0 +1,12 @@
+{
+	"model":"model/detection/vgg-ssd",
+	"combined_model":true,
+	"input_width":300,
+	"input_height":300,
+	"image":"data/1.jpg",
+	"mean":[104,117,124],
+	"scale":1,
+	"format":"BGR",
+	"threshold":0.2,
+	"mode": "video"
+}
