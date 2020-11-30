@@ -8,9 +8,10 @@ import numpy as np
 import paddlemobile as pm
 
 # from utils.video_utils import VideoThread, SerialThread
-from video_utils import VideoThread, SerialThread
+from video_utils import VideoThread
 
 __all__ = ['Baidu']
+
 
 class Baidu:
     def __init__(self, configs, label_map, name):
@@ -40,7 +41,8 @@ class Baidu:
         self.tensor = self.init_tensor((1, 3, configs['input_width'], configs['input_height']))
         # init video_thread
         if self.name == 'video' or self.name == 'camera':
-            self.video_thread = VideoThread(self.video_path, self.configs['input_width'], self.configs['input_height'], 1, 'video_thread')
+            self.video_thread = VideoThread(self.video_path, self.configs['input_width'], self.configs['input_height'],
+                                            1, 'video_thread')
             if self.name == 'video':
                 self.video_path = configs[self.name]
             elif self.name == 'camera':
@@ -131,14 +133,16 @@ class Baidu:
         for box in output:
             if box[1] > threshold:
                 print(
-                self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
+                    self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t',
+                    box[5])
                 x_min = int(box[2] * width)
                 y_min = int(box[3] * height)
                 x_max = int(box[4] * width)
                 y_max = int(box[5] * height)
                 print(
-                '+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t',
-                box[5])
+                    '+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4],
+                    '\t',
+                    box[5])
                 cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
                 cv2.putText(image, self.label_map[str(int(box[0]))] + ":" + "{:.2f}".format(box[1]),
                             (x_min, y_min - 10), font, 1, (0, 255, 0), 6)
@@ -158,7 +162,10 @@ class Baidu:
         print('类别\t置信度\t中点坐标\t左上坐标\t右下坐标\t')
         for box in output:
             if box[1] > threshold:
-                print('+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t', box[5])
+                print(
+                    '+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4],
+                    '\t',
+                    box[5])
 
     def show_result_in_video(self, image, output, threshold):
         """
@@ -179,8 +186,9 @@ class Baidu:
                 x_max = int(box[4] * width)
                 y_max = int(box[5] * height)
                 print(
-                '+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4], '\t',
-                box[5])
+                    '+ ', self.label_map[str(int(box[0]))], '\t', box[1], '\t', box[2], '\t', box[3], '\t', box[4],
+                    '\t',
+                    box[5])
                 cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
                 cv2.putText(image, self.label_map[str(int(box[0]))] + ":" + "{:.2f}".format(box[1]),
                             (x_min, y_min - 10), font, 1,
